@@ -3,10 +3,10 @@ package org.josegrangetto.controllers;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.chart.RadarChartMode;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 
 
 public class ViewController implements Initializable {
+
 
     //  Temperatura del sensor
     @FXML
@@ -36,6 +37,10 @@ public class ViewController implements Initializable {
     @FXML
     private StackPane cycleStepTile; // 6 (aX)
 
+
+    // ######################################
+    @FXML
+    public Label labelConnection;
 
     @FXML
     private ComboBox<String> portComboBox;

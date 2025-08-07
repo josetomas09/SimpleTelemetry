@@ -1,17 +1,80 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <math.h>
+#include <Adafruit_NeoPixel.h>
+
+#define LED_BUILTIN 48
+#define NUM_PIXELS 1
 
 #define SDA_PIN 7
 #define SCL_PIN 15
+#define MAX_BUFFER 64
+
+#define CMD_START 0x05              // Boton "Comenzar" en java.    ENQ – Enquiry.
+#define CMD_STOP 0x04               // Boton "Parar" en java.       EOT – End of Transmission.
+#define CMD_CALIBRATE 0x06          // Boton "Calibrar" en java.    ACK – Acknowledge.
+
+uint8_t buffer[MAX_BUFFER];
+size_t bufferIndex = 0;
+uint8_t command;
 
 float gRoll, gPitch, gYaw, aX, aY, aZ, temp;
 float gCalRoll, gCalPitch, gCalYaw, aCalX, aCalY, aCalZ, angRoll, angPitch;
 float kRoll = 0,
-    kRollUnc = 2 * 2,
-    kPitch = 0,
-    kPitchUnc = 2 * 2;
+        kRollUnc = 2 * 2,
+        kPitch = 0,
+        kPitchUnc = 2 * 2;
 
+Adafruit_NeoPixel pixels(NUM_PIXELS, LED_BUILTIN, NEO_GRB + NEO_KHZ800);
+
+void gyro_signals();
+void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, float kalmanMeasurement);
+void calibration();
+void sendTelemetry();
+void receiveSerialData();
+void handleCommand();
+
+void setup() {
+    Serial.begin(115200);
+    pixels.begin();
+
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(400000);
+    delay(250);
+
+    Wire.beginTransmission(0x68);
+    Wire.write(0x6B);
+    Wire.write(0x00);
+    Wire.endTransmission();
+    delay(250);
+
+    calibration();
+
+}
+
+void loop() {
+    pixels.clear();
+    gyro_signals();
+
+    gRoll -= gCalRoll;
+    gPitch -= gCalPitch;
+    gYaw -= gCalYaw;
+    aX -= aCalX;
+    aY -= aCalY;
+    aZ -= aCalZ;
+
+    kalman1D(kRoll, kRollUnc, gRoll, angRoll);
+    kalman1D(kPitch, kPitchUnc, gPitch, angPitch);
+
+
+    sendTelemetry();
+
+
+    delay(50);
+}
+
+
+// Methods
 
 void gyro_signals(void) {
     // DLPF Config
@@ -82,48 +145,9 @@ void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, f
     float kalmanGain = kalmanUncertainty / (kalmanUncertainty + 9);
     kalmanState = kalmanState + kalmanGain * (kalmanMeasurement - kalmanState);
     kalmanUncertainty = (1 - kalmanGain) * kalmanUncertainty;
-
 }
 
-void sendTelemetry() {
-
-
-    float data[6] = {aX, aY, aZ, kRoll, kPitch, temp};
-    Serial.write((byte*)data, sizeof(data));
-
-    // Adding a delimiter
-    uint8_t delimiter = 0x03;
-    Serial.write(&delimiter, 1);
-
-    /*
-    Serial.print("aX: "); Serial.print(aX);
-    Serial.print(" | aY: "); Serial.print(aY);
-    Serial.print(" | aZ: "); Serial.print(aZ);
-    Serial.print(" | kRoll: "); Serial.print(kRoll);
-    Serial.print(" | kPitch: "); Serial.print(kPitch);
-    Serial.print(" | Temp: "); Serial.println(temp);
-    */
-
-}
-
-
-void setup() {
-    Serial.begin(115200);
-
-    Wire.begin(SDA_PIN, SCL_PIN);
-    Wire.setClock(400000);
-    delay(250);
-
-    Wire.beginTransmission(0x68);
-    Wire.write(0x6B);
-    Wire.write(0x00);
-    Wire.endTransmission();
-    delay(250);
-
-
-
-    // Calibration
-
+void calibration() {
     for (int i = 0; i < 4000; i++) {
         gyro_signals();
         gCalRoll += gRoll;
@@ -141,24 +165,59 @@ void setup() {
     aCalX /= 4000;
     aCalY /= 4000;
     aCalZ /= 4000;
-
 }
 
-void loop() {
-    gyro_signals();
 
-    gRoll -= gCalRoll;
-    gPitch -= gCalPitch;
-    gYaw -= gCalYaw;
-    aX -= aCalX;
-    aY -= aCalY;
-    aZ -= aCalZ;
+// communication
 
-    kalman1D(kRoll, kRollUnc, gRoll, angRoll);
-    kalman1D(kPitch, kPitchUnc, gPitch, angPitch);
+void sendTelemetry() {
+    float data[6] = {aX, aY, aZ, kRoll, kPitch, temp};
+    Serial.write((byte *) data, sizeof(data));
 
+    // Adding a delimiter
+    uint8_t delimiter = 0x03;
+    Serial.write(&delimiter, 1);
 
-    sendTelemetry();
+    /*
+     *  Debug
+     *
+    Serial.print("aX: "); Serial.print(aX);
+    Serial.print(" | aY: "); Serial.print(aY);
+    Serial.print(" | aZ: "); Serial.print(aZ);
+    Serial.print(" | kRoll: "); Serial.print(kRoll);
+    Serial.print(" | kPitch: "); Serial.print(kPitch);
+    Serial.print(" | Temp: "); Serial.println(temp);
+    */
+}
 
-    delay(50);
+void receiveSerialData() {
+    while (Serial.available()) {
+        uint8_t b = Serial.read();
+        if (b == 0x03) {
+            buffer[bufferIndex] = '\0';
+
+            String payload = String((char *) buffer);
+            Serial.println("Recived (bytes):" + payload);
+        }
+    }
+}
+
+void handleCommand() {
+    switch (command) {
+        case CMD_CALIBRATE:
+            // Calibrate
+            calibration();
+            break;
+        case CMD_START:
+            // Start
+            sendTelemetry();
+            break;
+        case CMD_STOP:
+            // Stop
+            // TODO
+            break;
+        default:
+            Serial.println("Unknown command.");
+            break;
+    }
 }

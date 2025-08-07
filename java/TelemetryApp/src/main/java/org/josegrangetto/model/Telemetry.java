@@ -10,11 +10,11 @@ public class Telemetry {
             temp;
 
 
-    public float reformat(float num){
-        return Math.round(num*100)/100f;
+    public float reformat(float num) {
+        return Math.round(num * 100) / 100f;
     }
 
-    public void reformatAll(){
+    public void reformatAll() {
         aX = reformat(aX);
         aY = reformat(aY);
         aZ = reformat(aZ);

@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.*;
 import org.josegrangetto.model.Telemetry;
 import org.josegrangetto.utils.SerialDecoder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class CommController {
@@ -43,15 +44,19 @@ public class CommController {
         }
 
         @Override
-        public byte[] getMessageDelimiter(){return new byte[]{(byte) 0x03};}
+        public byte[] getMessageDelimiter() {
+            return new byte[]{(byte) 0x03};
+        }
 
         @Override
-        public boolean delimiterIndicatesEndOfMessage(){ return true; }
+        public boolean delimiterIndicatesEndOfMessage() {
+            return true;
+        }
 
         @Override
-        public void serialEvent(SerialPortEvent event){
+        public void serialEvent(SerialPortEvent event) {
             byte[] delimitedMessage = event.getReceivedData();
-            try{
+            try {
                 if (delimitedMessage.length != 25 || delimitedMessage[24] != (byte) 0x03) {
                     System.out.println("Invalid data or missing delimiter");
                     return;
@@ -73,32 +78,15 @@ public class CommController {
         }
     };
 
-    /*
+    public void sendData(String dataToSend) {
+        byte delimiter = (byte) 0x03;
+        byte[] payload = dataToSend.getBytes(StandardCharsets.UTF_8);
+        int bytesWritten = selPort.writeBytes(payload, dataToSend.length());
+        selPort.writeBytes(new byte[]{delimiter}, 1);
 
-    public Telemetry readData() throws Exception {
-        if (selPort != null && selPort.isOpen() && selPort.bytesAvailable() >= 24) {
-            byte[] buffer = new byte[24];
-            selPort.readBytes(buffer, 24);
-            return SerialDecoder.fromByteToFloat(buffer);
-        }
-        return null;
+        //debug
+        System.out.println("Sent " + bytesWritten + " bytes.");
     }
 
-    public boolean sendData(int data) {
-        // TODO hacer
-        return false;
-    }
-
-     */
-
-    public boolean isPortOpen() {
-        return selPort != null && selPort.isOpen();
-    }
-
-    public void closePort() {
-        if (selPort != null && selPort.isOpen()) {
-            selPort.closePort();
-        }
-    }
 }
 

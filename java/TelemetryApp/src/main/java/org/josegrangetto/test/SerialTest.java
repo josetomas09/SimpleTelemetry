@@ -18,27 +18,29 @@ public class SerialTest {
         System.out.println("\nIngrese el nombre del puerto a usar: ");
         String port = sc.nextLine();
 
-        boolean isOpen = comm.openPort(port, SupportedBaudRate.RATE_115200.getSpeed(), 8, 1,0);
+        boolean isOpen = comm.openPort(port, SupportedBaudRate.RATE_115200.getSpeed(), 8, 1, 0);
 
-        if(isOpen){
+        if (isOpen) {
             System.out.println("El puerto " + port + " Se ha abierto correctamente.");
-            System.out.println("Esperando datos... (Ctrl+C to exit)");
+            System.out.println("Esperando datos... ");
 
-            while(comm.isPortOpen()){
-                try{
-                    synchronized (comm){
+            comm.sendData("Hola desde Java");
+
+            while (true) {
+                try {
+                    synchronized (comm) {
                         Telemetry t = comm.data;
-                        if(t != null){
+                        if (t != null) {
                             System.out.println(t.toString());
                         }
                     }
                     Thread.sleep(1000);
-                }catch(InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
 
-        }else{
+        } else {
             System.out.println("El puerto " + port + " No se ha podido abrir.");
         }
     }
