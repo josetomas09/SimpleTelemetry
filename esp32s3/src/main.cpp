@@ -12,7 +12,6 @@ float kRoll = 0,
     kPitch = 0,
     kPitchUnc = 2 * 2;
 
-float data[6] = {aX, aY, aZ, kRoll, kPitch, temp};
 
 void gyro_signals(void) {
     // DLPF Config
@@ -86,6 +85,28 @@ void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, f
 
 }
 
+void sendTelemetry() {
+
+
+    float data[6] = {aX, aY, aZ, kRoll, kPitch, temp};
+    Serial.write((byte*)data, sizeof(data));
+
+    // Adding a delimiter
+    uint8_t delimiter = 0x03;
+    Serial.write(&delimiter, 1);
+
+    /*
+    Serial.print("aX: "); Serial.print(aX);
+    Serial.print(" | aY: "); Serial.print(aY);
+    Serial.print(" | aZ: "); Serial.print(aZ);
+    Serial.print(" | kRoll: "); Serial.print(kRoll);
+    Serial.print(" | kPitch: "); Serial.print(kPitch);
+    Serial.print(" | Temp: "); Serial.println(temp);
+    */
+
+}
+
+
 void setup() {
     Serial.begin(115200);
 
@@ -137,7 +158,7 @@ void loop() {
     kalman1D(kPitch, kPitchUnc, gPitch, angPitch);
 
 
-    Serial.write((byte*)data, sizeof(data));
+    sendTelemetry();
 
     delay(50);
 }

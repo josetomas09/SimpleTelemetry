@@ -14,11 +14,11 @@ public class SerialDecoder {
 
         Telemetry telemetry = new Telemetry();
         telemetry.aX = buffer.getFloat(0);
-        telemetry.aY = buffer.getFloat(1);
-        telemetry.aZ = buffer.getFloat(2);
-        telemetry.roll = buffer.getFloat(3);
-        telemetry.pitch = buffer.getFloat(4);
-        telemetry.temp = buffer.getFloat(5);
+        telemetry.aY = buffer.getFloat(4);
+        telemetry.aZ = buffer.getFloat(8);
+        telemetry.roll = buffer.getFloat(12);
+        telemetry.pitch = buffer.getFloat(16);
+        telemetry.temp = buffer.getFloat(20);
 
         return telemetry;
 

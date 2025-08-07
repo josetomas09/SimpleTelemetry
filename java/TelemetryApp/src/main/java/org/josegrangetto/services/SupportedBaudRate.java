@@ -16,6 +16,10 @@ public enum SupportedBaudRate {
 
     private final int speed;
 
+    public int getSpeed() {
+        return speed;
+    }
+
     SupportedBaudRate(int speed) {
         this.speed = speed;
     }
