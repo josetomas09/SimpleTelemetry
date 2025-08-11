@@ -3,7 +3,7 @@
 #include <math.h>
 #include <Adafruit_NeoPixel.h>
 
-#define LED_BUILTIN 48
+#define LED_INBUILD 48
 #define NUM_PIXELS 1
 
 #define SDA_PIN 7
@@ -25,7 +25,7 @@ float kRoll = 0,
         kPitch = 0,
         kPitchUnc = 2 * 2;
 
-Adafruit_NeoPixel pixels(NUM_PIXELS, LED_BUILTIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(NUM_PIXELS, LED_INBUILD, NEO_GRB + NEO_KHZ800);
 
 void gyro_signals();
 void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, float kalmanMeasurement);
@@ -148,6 +148,9 @@ void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, f
 }
 
 void calibration() {
+    pixels.setPixelColor(0, pixels.Color(0, 0, 150));
+    pixels.show();
+
     for (int i = 0; i < 4000; i++) {
         gyro_signals();
         gCalRoll += gRoll;
@@ -159,12 +162,17 @@ void calibration() {
         aCalZ += (aZ - 1.0);
         delay(1);
     }
+
     gCalRoll /= 4000;
     gCalPitch /= 4000;
     gCalYaw /= 4000;
     aCalX /= 4000;
     aCalY /= 4000;
     aCalZ /= 4000;
+
+
+    pixels.clear();
+    pixels.show();
 }
 
 
@@ -214,7 +222,7 @@ void handleCommand() {
             break;
         case CMD_STOP:
             // Stop
-            // TODO
+            //TODO
             break;
         default:
             Serial.println("Unknown command.");
