@@ -32,7 +32,7 @@ void kalman1D(float &kalmanState, float &kalmanUncertainty, float kalmanInput, f
 void calibration();
 void sendTelemetry();
 void receiveSerialData();
-void handleCommand();
+void handleCommand(uint8_t command);
 
 void setup() {
     Serial.begin(115200);
@@ -48,12 +48,13 @@ void setup() {
     Wire.endTransmission();
     delay(250);
 
-    calibration();
+    //calibration();
 
 }
 
 void loop() {
     pixels.clear();
+    receiveSerialData();
     gyro_signals();
 
     gRoll -= gCalRoll;
@@ -101,9 +102,9 @@ void gyro_signals(void) {
     Wire.endTransmission();
     Wire.requestFrom(0x68, 6);
 
-    const int16_t gyroX = Wire.read() << 8 | Wire.read();
-    const int16_t gyroY = Wire.read() << 8 | Wire.read();
-    const int16_t gyroZ = Wire.read() << 8 | Wire.read();
+    int16_t const gyroX = Wire.read() << 8 | Wire.read();
+    int16_t const gyroY = Wire.read() << 8 | Wire.read();
+    int16_t const gyroZ = Wire.read() << 8 | Wire.read();
 
     gRoll = (float) gyroX / 65.5;
     gPitch = (float) gyroY / 65.5;
@@ -115,17 +116,17 @@ void gyro_signals(void) {
     Wire.endTransmission();
     Wire.requestFrom(0x68, 6);
 
-    const int16_t accelXLSB = Wire.read() << 8 | Wire.read();
-    const int16_t accelYLSB = Wire.read() << 8 | Wire.read();
-    const int16_t accelZLSB = Wire.read() << 8 | Wire.read();
+    int16_t const accelXLSB = Wire.read() << 8 | Wire.read();
+    int16_t const accelYLSB = Wire.read() << 8 | Wire.read();
+    int16_t const accelZLSB = Wire.read() << 8 | Wire.read();
 
     aX = (float) accelXLSB / 16384 - 0.02;
     aY = (float) accelYLSB / 16384 + 0.03;
     aZ = (float) accelZLSB / 16384 - 0.06;
 
     // Angle Pitch and Roll in degrees
-    angRoll = atan(aY / sqrt(aX * aX + aZ * aZ)) * 1 / (180 / PI);
-    angPitch = atan(aX / sqrt(aY * aY + aZ * aZ)) * 1 / (180 / PI);
+    angRoll = atan(aY / sqrt(aX * aX + aZ * aZ)) * 1 / (180.0 / PI);
+    angPitch = atan(aX / sqrt(aY * aY + aZ * aZ)) * 1 / (180.0 / PI);
 
     // Temp Measurements
     Wire.beginTransmission(0x68);
@@ -133,7 +134,7 @@ void gyro_signals(void) {
     Wire.endTransmission();
     Wire.requestFrom(0x68, 2);
 
-    const int16_t tempOUT = Wire.read() << 8 | Wire.read();
+    int16_t const tempOUT = Wire.read() << 8 | Wire.read();
 
     // Temp in degree
     temp = (tempOUT / 340.0) + 36.53;
@@ -201,16 +202,11 @@ void sendTelemetry() {
 void receiveSerialData() {
     while (Serial.available()) {
         uint8_t b = Serial.read();
-        if (b == 0x03) {
-            buffer[bufferIndex] = '\0';
-
-            String payload = String((char *) buffer);
-            Serial.println("Recived (bytes):" + payload);
-        }
+        handleCommand(b);
     }
 }
 
-void handleCommand() {
+void handleCommand(uint8_t command) {
     switch (command) {
         case CMD_CALIBRATE:
             // Calibrate
@@ -225,7 +221,8 @@ void handleCommand() {
             //TODO
             break;
         default:
-            Serial.println("Unknown command.");
+            Serial.print("Unknown command: 0x");
+            Serial.println(command, HEX);
             break;
     }
 }

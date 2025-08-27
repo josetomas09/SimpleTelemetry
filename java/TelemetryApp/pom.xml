@@ -13,6 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
         <javafx.version>21.0.7</javafx.version>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -25,7 +26,6 @@
         </dependency>
 
         <!-- JavaFX -->
-
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -46,6 +46,8 @@
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+
+        <!-- Controles extras -->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
@@ -60,6 +62,7 @@
             <groupId>eu.hansolo</groupId>
             <artifactId>tilesfx</artifactId>
             <version>21.0.3</version>
+            <!-- JavaFX embebido excluido -->
             <exclusions>
                 <exclusion>
                     <groupId>org.openjfx</groupId>
@@ -67,6 +70,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -83,25 +88,27 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
+
+            <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <executions>
                     <execution>
-                        <!-- Default configuration for running with: mvn clean javafx:run -->
+                        <!-- Config mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>org.josegrangetto.telemetryapp/org.josegrangetto.application.App</mainClass>
+                            <mainClass>org.josegrangetto.application.App</mainClass>
                             <failOnMissingModuleDependencies>true</failOnMissingModuleDependencies>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
@@ -109,6 +116,11 @@
                             <noManPages>true</noManPages>
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
+
+                            <!-- Evitar warnings de acceso en futuras versiones -->
+                            <jvmArgs>
+                                --enable-native-access=ALL-UNNAMED
+                            </jvmArgs>
                         </configuration>
                     </execution>
                 </executions>

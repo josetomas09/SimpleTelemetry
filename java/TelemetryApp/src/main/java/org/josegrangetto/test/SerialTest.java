@@ -24,7 +24,7 @@ public class SerialTest {
             System.out.println("El puerto " + port + " Se ha abierto correctamente.");
             System.out.println("Esperando datos... ");
 
-            comm.sendData("Hola desde Java");
+            comm.sendData((byte)0x06);
 
             while (true) {
                 try {

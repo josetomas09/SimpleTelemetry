@@ -3,12 +3,16 @@ package org.josegrangetto.controllers;
 import eu.hansolo.tilesfx.Tile;
 import eu.hansolo.tilesfx.TileBuilder;
 import eu.hansolo.tilesfx.chart.RadarChartMode;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import org.josegrangetto.services.SupportedBaudRate;
 
 
 import java.net.URL;
@@ -45,17 +49,37 @@ public class ViewController implements Initializable {
     @FXML
     private ComboBox<String> portComboBox;
 
+    @FXML
+    public Button calBtn;
+
+
     private final CommController comm = new CommController();
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        // ###################### NAV BAR ########################
         portComboBox.getItems().addAll(comm.getAvailablePorts());
-        //portComboBox.setItems(FXCollections.observableArrayList(comm.getAvailablePorts()));
+
+        portComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldPort, newPort) -> {
+            if (newPort != null) {
+                boolean isOpen = comm.openPort(newPort, SupportedBaudRate.RATE_115200.getSpeed(), 8, 1, 0);
+                if (isOpen) {
+                    System.out.println("Puerto " + newPort + " abierto correctamente.");
+                } else {
+                    System.out.println("Error al abrir el puerto " + newPort);
+                }
+            }
+        });
+
+        calBtn.setOnAction(e -> {
+            comm.sendData((byte) 0x06);
+            System.out.println("Boton Calibrar presionado");
+        });
 
 
-
+        // #################### END - NAV BAR ####################
 
         // Temperature Tile
         Tile tempGaugeTile = TileBuilder.create()
@@ -126,6 +150,19 @@ public class ViewController implements Initializable {
                 .decimals(2)
                 .build();
         cycleStepTile.getChildren().add(cycleStepTile1);
+
+
+
+        //#################### Close port #######################
+        Platform.runLater(() -> {
+            Stage stage = (Stage) calBtn.getScene().getWindow();
+            stage.setOnCloseRequest(event -> {
+                System.out.println("Cerrando puerto serial...");
+                comm.closePort();
+            });
+        });
+        // ######################################################
+
 
     }
 

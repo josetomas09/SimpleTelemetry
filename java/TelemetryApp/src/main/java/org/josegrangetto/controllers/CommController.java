@@ -78,15 +78,18 @@ public class CommController {
         }
     };
 
-    public void sendData(String dataToSend) {
+    public void sendData(byte dataToSend) {
         byte delimiter = (byte) 0x03;
-        byte[] payload = dataToSend.getBytes(StandardCharsets.UTF_8);
-        int bytesWritten = selPort.writeBytes(payload, dataToSend.length());
+        selPort.writeBytes(new byte[]{dataToSend}, 1);
         selPort.writeBytes(new byte[]{delimiter}, 1);
-
-        //debug
-        System.out.println("Sent " + bytesWritten + " bytes.");
+        System.out.println("Sent command: " + String.format("0x%02X", dataToSend));
     }
 
+    public void closePort() {
+        if (selPort != null && selPort.isOpen()) {
+            selPort.closePort();
+            System.out.println("Puerto cerrado correctamente.");
+        }
+    }
 }
 
