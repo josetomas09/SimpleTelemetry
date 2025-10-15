@@ -12,10 +12,13 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.josegrangetto.model.Telemetry;
 import org.josegrangetto.services.SupportedBaudRate;
 
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 
@@ -52,9 +55,19 @@ public class ViewController implements Initializable {
     @FXML
     public Button calBtn;
 
+    @FXML
+    private Label labelDateTime;
+
+
+    private Tile tempGaugeTile;
+    private Tile gaugeSparkLine1;
+    private Tile radarChartTile1;
+    //private RadarChartData forward, backward, right, left;
+
+
 
     private final CommController comm = new CommController();
-
+    private volatile boolean stop = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -78,11 +91,12 @@ public class ViewController implements Initializable {
             System.out.println("Boton Calibrar presionado");
         });
 
+        TimeNow();
 
         // #################### END - NAV BAR ####################
 
         // Temperature Tile
-        Tile tempGaugeTile = TileBuilder.create()
+        tempGaugeTile = TileBuilder.create()
                 .skinType(Tile.SkinType.BAR_GAUGE)
                 .minValue(0)
                 .maxValue(50)
@@ -90,12 +104,16 @@ public class ViewController implements Initializable {
                 .threshold(30)
                 .thresholdVisible(true)
                 .title("Temperatura")
-                .unit("C")
-                .text("Temperatura description")
+                .unit("°C")
+                .text("Temperatura del sensor")
                 .animated(true)
                 .build();
         barGaugeTile.getChildren().add(tempGaugeTile);
 
+
+        readTemperatureData();
+
+        /*
         // G Force Tile
         Tile radarChartTile1 = TileBuilder.create()
                 .skinType(Tile.SkinType.RADAR_CHART)
@@ -103,11 +121,23 @@ public class ViewController implements Initializable {
                 .title("Fuerzas G")
                 .unit("G")
                 .maxValue(2)
-                .value(60)
                 .prefSize(300, 300)
                 .build();
+
+        RadarChartData forward = new RadarChartData("Forward", 0);
+        RadarChartData backward = new RadarChartData("Backward", 0);
+        RadarChartData right = new RadarChartData("Right", 0);
+        RadarChartData left = new RadarChartData("Left", 0);
+
+        radarChartTile1.addRadarChartData(forward);
+        radarChartTile1.addRadarChartData(backward);
+        radarChartTile1.addRadarChartData(right);
+        radarChartTile1.addRadarChartData(left);
+
+
         RadarCharSector.getChildren().add(radarChartTile1);
 
+         */
         // Timeline Tile
         Tile countdownTile1 = TileBuilder.create()
                 .skinType(Tile.SkinType.COUNTDOWN_TIMER)
@@ -116,9 +146,10 @@ public class ViewController implements Initializable {
                 .build();
         countdownTile.getChildren().add(countdownTile1);
 
-        Tile gaugeSparkLine1 = TileBuilder.create()
+        // medir aceleracion en eje y
+        gaugeSparkLine1 = TileBuilder.create()
                 .skinType(Tile.SkinType.GAUGE_SPARK_LINE)
-                .title("gaugeSparkLine Tile")
+                .title("Aceleración Longitudinal (eje Y)")
                 .animated(true)
                 .textVisible(false)
                 .averagingPeriod(25)
@@ -127,6 +158,7 @@ public class ViewController implements Initializable {
                 .build();
 
         gaugeSparkLineTile.getChildren().add(gaugeSparkLine1);
+        readAccelerationData();
 
         //  Show (aX, aY) y Roll, Pitch Tile
         Tile smoothedChartTile1 = TileBuilder.create()
@@ -157,6 +189,7 @@ public class ViewController implements Initializable {
         Platform.runLater(() -> {
             Stage stage = (Stage) calBtn.getScene().getWindow();
             stage.setOnCloseRequest(event -> {
+                stop = true;
                 System.out.println("Cerrando puerto serial...");
                 comm.closePort();
             });
@@ -165,5 +198,84 @@ public class ViewController implements Initializable {
 
 
     }
+
+    //#################### Get DateTime #######################
+    private void TimeNow(){
+        Thread t = new Thread(() -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/mm/yyyy | hh:mm:ss");
+            while (!stop) {
+                try {
+                    Thread.sleep(1000);
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+                final String timenow = sdf.format(new Date());
+                Platform.runLater(() -> {
+                    labelDateTime.setText(timenow);
+                });
+            }
+        });
+        t.start();
+    }
+    // ######################################################
+
+
+    private void readTemperatureData() {
+        Thread t = new Thread(() -> {
+            while (!stop) {
+                try {
+                    synchronized (comm) {
+                        Telemetry telemetry = comm.data;
+                        if (telemetry != null) {
+                            float temp = telemetry.temp;
+                            Platform.runLater(() -> tempGaugeTile.setValue(temp));
+                        }
+                    }
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+
+    private void readAccelerationData() {
+        Thread t = new Thread(() -> {
+            while (!stop) {
+                try {
+                    synchronized (comm) {
+                        Telemetry telemetry = comm.data;
+                        if (telemetry != null) {
+                            float ay = telemetry.aY; // eje Y → aceleración longitudinal
+                            Platform.runLater(() -> gaugeSparkLine1.setValue(ay));
+                        }
+                    }
+                    Thread.sleep(100); // cada 100 ms (más rápido que la temperatura)
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /*
+    // G forces displays and orientation
+    private void updateGForces(float ax, float ay) {
+        Platform.runLater(() -> {
+            forward.setValue(ax > 0 ? ax : 0);
+            backward.setValue(ax < 0 ? -ax : 0);
+            right.setValue(ay > 0 ? ay : 0);
+            left.setValue(ay < 0 ? -ay : 0);
+        });
+    }
+
+     */
+
+
 
 }

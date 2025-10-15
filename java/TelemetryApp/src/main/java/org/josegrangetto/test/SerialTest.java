@@ -31,7 +31,7 @@ public class SerialTest {
                     synchronized (comm) {
                         Telemetry t = comm.data;
                         if (t != null) {
-                            System.out.println(t.toString());
+                            System.out.println(t.temp);
                         }
                     }
                     Thread.sleep(1000);
