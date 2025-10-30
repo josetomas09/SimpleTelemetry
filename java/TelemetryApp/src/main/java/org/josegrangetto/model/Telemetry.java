@@ -5,8 +5,8 @@ public class Telemetry {
             aX,
             aY,
             aZ,
-            roll,
-            pitch,
+            roll,   // TODO debe ser "pitch"
+            pitch,  // TODO debe ser "roll"
             temp;
 
 
