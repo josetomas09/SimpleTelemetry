@@ -23,6 +23,7 @@
       "includePath": [
         "${workspaceFolder}/build/include",
         "${workspaceFolder}/components/**",
+        "${workspaceFolder}/managed_components/**",
         "${env:IDF_PATH}/components/**",
         "${workspaceFolder}/main"
       ],
