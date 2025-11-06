@@ -24,8 +24,8 @@
         "${workspaceFolder}/build/include",
         "${workspaceFolder}/components/**",
         "${workspaceFolder}/managed_components/**",
-        "${env:IDF_PATH}/components/**",
-        "${workspaceFolder}/main"
+        "${workspaceFolder}/main",
+        "${env:IDF_PATH}/components/**"
       ],
       "compileCommands": "${workspaceFolder}/build/compile_commands.json",
       "intelliSenseMode": "gcc-x64"
