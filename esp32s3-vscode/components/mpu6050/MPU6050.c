@@ -11,17 +11,23 @@
 #define DELAY_MS 1000
 #define CLOCK_SPEED_HZ 400000  // 400kHz standard I2C speed
 
+static i2c_master_bus_handle_t bus_handle;
+static i2c_master_dev_handle_t mpu6050_dev_handle;
+
 static const i2c_port_num_t i2c_port = -1;          // -1 for auto-select I2C port
 static const gpio_num_t i2c_sda_pin = 7;            // GPIO number for SDA
 static const gpio_num_t i2c_scl_pin = 15;           // GPIO number for SCL
 static const uint8_t i2c_glitch_ignore_cnt = 7;     // Glitch filter count
 
+
 static const uint16_t mpu6050_addr = MPU6050_ADDR;
 static const uint32_t mpu6050_scl_speed_hz = CLOCK_SPEED_HZ;
 static const uint32_t sleep_time_ms = DELAY_MS;
 
-static i2c_master_bus_handle_t bus_handle;
-static i2c_master_dev_handle_t mpu6050_dev_handle;
+static const uint8_t DLPF_CFG = 0x04;               // Set 1kHz output bandwidth and 20Hz internal sampling rate (Gyro).
+static const uint8_t FL_SEL = 0x08;                 // Full-Scale Range (0) = ±500°/s and Sensitivity Scale Factor = 131 LSB/(°/s) (Gyro).
+static const uint8_t AFS_SEL = 0x00;                // Full-Scale Range (1) = ±2g and Sensitivity Scale Factor = 16384 LSB/g (Accel).
+
 
 esp_err_t err;
 
@@ -87,6 +93,33 @@ uint8_t MPU6050_Init(){
         ESP_LOGI("MPU6050", "WHO_AM_I register verified: 0x%02X", who_am_i);
     }
     
+    /* 
+    ========================================================
+        2. MPU6050 Configuration (DLPF, FL_SEL, AFL_SEL) 
+    ========================================================
+    */
+
+    // Configure DLPF
+    err = MPU6050_write_reg(DLPF_CONFIG_REG, DLPF_CFG);
+    if (err != ESP_OK) {
+        ESP_LOGE("MPU6050", "Failed to configure DLPF: %d", err);
+        abort();
+    }
+
+    // Configure FL_SEL
+    err = MPU6050_write_reg(GYRO_CONFIG_REG, FL_SEL);
+    if (err != ESP_OK) {
+        ESP_LOGE("MPU6050", "Failed to configure FL_SEL: %d", err);
+        abort();
+    }
+
+    // Configure AFS_SEL
+    err = MPU6050_write_reg(ACCEL_CONFIG_REG, AFS_SEL);
+    if (err != ESP_OK) {
+        ESP_LOGE("MPU6050", "Failed to configure AFS_SEL: %d", err);
+        abort();
+    }
+
     return 0;
     
 }

@@ -16,6 +16,7 @@
 #define MPU6050_ADDR        0x68 // I2C address of the MPU6050
 #define MPU6050_WHO_AM_I    0x75 // WHO_AM_I register
 #define PWR_MGMT_1_REG      0x6B // Power management register 1
+#define DLPF_CONFIG_REG     0x1A // Digital Low Pass Filter configuration register
 #define GYRO_CONFIG_REG     0x1B // Gyroscope configuration register
 #define ACCEL_CONFIG_REG    0x1C // Accelerometer configuration register
 
