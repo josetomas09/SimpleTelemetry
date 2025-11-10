@@ -33,11 +33,11 @@
 
 // Kalman filter structure (1D state: Angle & Bias)
 typedef struct {
-    double Q_angle;      // Varianza de ruido del proceso (Angulo)
-    double Q_bias;       // Varianza de ruido del sesgo del Giroscopio
-    double R_measure;    // Varianza de ruido de la medida (Acelerometro)
-    double angle;        // Angulo estimado (X state)
-    double P[2][2];    // Matriz de covarianza del error
+    double Q_angle;      // Process noise variance (Angle)
+    double Q_bias;       // Process noise variance (Gyroscope Bias)
+    double R_measure;    // Measurement noise variance (Accelerometer)
+    double angle;        // Estimated angle (X state)
+    double P[2][2];      // Error covariance matrix
 
 } Kalman_t;
 
@@ -54,10 +54,10 @@ typedef struct {
     int16_t Temp_RAW;
 
     // Scaled data - in 'g' and 'deg/s'
-    double Ax; // Acceleration in g
+    double Ax;  // Acceleration in g
     double Ay;
     double Az;
-    double Gx; // Gyroscope in deg/s
+    double Gx;  // Gyroscope in deg/s
     double Gy;
     double Gz;
 
@@ -78,14 +78,25 @@ typedef struct {
 */
 
 // Init MPU6050
-uint8_t MPU6050_Init(); // TODO: Inicia el MPU-6050 y configura los registros (PWR_MGMT, DLPF, FS_SEL)
+uint8_t MPU6050_Init();
+
 // Read raw data and convert
-void MPU6050_Read_All(MPU6050_t *DataStruct); // TODO: Read 14 bytes raw data and then convert to 'g' and 'deg/s'
+void MPU6050_Read_All(MPU6050_t *DataStruct);       // TODO: Read 14 bytes raw data and then convert to 'g' and 'deg/s'
+
 // I2C utility functions
-uint8_t MPU6050_write_reg(uint8_t reg_addr, uint8_t data);
-uint8_t MPU6050_read_reg(uint8_t reg_addr, uint8_t *buffer, uint8_t len);
+esp_err_t MPU6050_write_reg(uint8_t reg_addr, uint8_t data);
+esp_err_t MPU6050_read_reg(uint8_t reg_addr, uint8_t *buffer, uint8_t len);
+
 // Kalman filter functions
 void Kalman_Init(Kalman_t *Kalman);
 double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt);
 
 #endif /* MPU6050_h */
+
+/*
+    Possible Future Additions:
+    - Add Union for config registers like:
+        - Gyroscope Sample                -->   DLPFCFG=1,2,3,4,5, or 6
+        - Gyroscope Full Scale Range      -->   FS_SEL=0,1,2, or 3
+        - Accelerometer Full Scale Range  -->   AFS_SEL=0,1,2 or 3
+*/

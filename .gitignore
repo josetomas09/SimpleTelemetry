@@ -25,3 +25,4 @@ replay_pid*
 
 # IntelliJ Idea
 .idea/
+esp32s3-vscode/CMakeLists.txt
