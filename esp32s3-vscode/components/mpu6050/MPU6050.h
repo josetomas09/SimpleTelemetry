@@ -38,6 +38,7 @@ typedef struct {
     double Q_bias;       // Process noise variance (Gyroscope Bias)
     double R_measure;    // Measurement noise variance (Accelerometer)
     double angle;        // Estimated angle (X state)
+    double bias;         // Estimated gyroscope bias (Y state)
     double P[2][2];      // Error covariance matrix
 
 } Kalman_t;

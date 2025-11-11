@@ -28,14 +28,19 @@ static const uint8_t DLPF_CFG = 0x04;               // Set 1kHz output bandwidth
 static const uint8_t FL_SEL = 0x08;                 // Full-Scale Range (0) = ±500°/s and Sensitivity Scale Factor = 131 LSB/(°/s) (Gyro).
 static const uint8_t AFS_SEL = 0x00;                // Full-Scale Range (1) = ±2g and Sensitivity Scale Factor = 16384 LSB/g (Accel).
 
-
 esp_err_t err;
+
+    /* 
+    ========================================================
+            1. I2C & MPU6050 Initialization
+    ========================================================
+    */
 
 uint8_t MPU6050_Init(){
 
     /* 
     ========================================================
-            1. I2C Bus Configuration
+            1.1. I2C Bus Configuration
     ========================================================
     */
 
@@ -95,7 +100,7 @@ uint8_t MPU6050_Init(){
     
     /* 
     ========================================================
-        2. MPU6050 Configuration (DLPF, FL_SEL, AFL_SEL) 
+        1.2. MPU6050 Configuration (DLPF, FL_SEL, AFL_SEL) 
     ========================================================
     */
 
@@ -155,3 +160,18 @@ esp_err_t MPU6050_read_reg(uint8_t reg_addr, uint8_t *buffer, uint8_t len){
     return err;
 };
 
+
+    /* 
+    ========================================================
+            2. Kalman Filter Implementation
+    ========================================================
+    */
+
+    void Kalman_Init(Kalman_t *Kalman){};
+
+    double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt){
+        double rate = (newRate - Kalman -> bias);
+        Kalman -> angle += dt * rate;
+
+
+    };
