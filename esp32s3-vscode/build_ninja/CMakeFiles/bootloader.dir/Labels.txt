@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/CMakeFiles/bootloader
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/CMakeFiles/bootloader.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/CMakeFiles/bootloader-complete.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

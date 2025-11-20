@@ -1,0 +1,2 @@
+source /workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader/gdbinit/symbols
+source /workspaces/SimpleTelemetry/esp32s3-vscode/build_ninja/bootloader/gdbinit/connect

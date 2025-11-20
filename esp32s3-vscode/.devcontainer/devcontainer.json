@@ -1,7 +1,10 @@
 {
 	"name": "ESP-IDF QEMU",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"args": {
+			"DOCKER_TAG": "v5.5.1"
+		}
 	},
 	"customizations": {
 		"vscode": {
@@ -10,6 +13,13 @@
 				"idf.espIdfPath": "/opt/esp/idf",
 				"idf.toolsPath": "/opt/esp",
 				"idf.gitPath": "/usr/bin/git"
+				,
+				"clangd.path": "/opt/esp/tools/esp-clang/esp-19.1.2_20250312/esp-clang/bin/clangd",
+				"clangd.arguments": [
+					"--background-index",
+					"--query-driver=/opt/esp/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc",
+					"--compile-commands-dir=${workspaceFolder}/build"
+				]
 			},
 			"extensions": [
 				"espressif.esp-idf-extension",
@@ -18,4 +28,5 @@
 		}
 	},
 	"runArgs": ["--privileged"]
+	,"postStartCommand": ". /opt/esp/idf/export.sh && idf.py --version && python3 -V"
 }

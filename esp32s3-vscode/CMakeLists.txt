@@ -4,7 +4,7 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 
-include(/home/jose/esp/v5.5.1/esp-idf/tools/cmake/project.cmake)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(esp32s3-vscode)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

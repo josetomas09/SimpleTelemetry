@@ -173,5 +173,6 @@ esp_err_t MPU6050_read_reg(uint8_t reg_addr, uint8_t *buffer, uint8_t len){
         double rate = (newRate - Kalman -> bias);
         Kalman -> angle += dt * rate;
 
+        return Kalman->angle;
 
     };
